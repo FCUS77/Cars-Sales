@@ -169,6 +169,11 @@
             border: 1px solid #eee;
         }
 
+        .form-container h3 {
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
         .form-row {
             display: flex;
             flex-wrap: wrap;
@@ -195,6 +200,7 @@
             border-radius: var(--border-radius);
             font-size: 16px;
             transition: var(--transition);
+            font-family: 'Cairo', sans-serif;
         }
 
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
@@ -222,6 +228,7 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
+            font-family: 'Cairo', sans-serif;
         }
 
         .btn-primary {
@@ -265,6 +272,7 @@
             overflow-x: auto;
             border-radius: var(--border-radius);
             border: 1px solid #eee;
+            margin-bottom: 20px;
         }
 
         table {
@@ -324,6 +332,7 @@
         .action-buttons {
             display: flex;
             gap: 5px;
+            justify-content: flex-end;
         }
 
         .action-btn {
@@ -379,6 +388,7 @@
             justify-content: center;
             font-size: 24px;
             color: white;
+            flex-shrink: 0;
         }
 
         .stat-icon.cash {
@@ -441,6 +451,26 @@
             font-size: 14px;
         }
 
+        .loading {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(0,0,0,0.1);
+            border-radius: 50%;
+            border-top-color: var(--secondary-color);
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
         /* التجاوب مع الشاشات الصغيرة */
         @media (max-width: 768px) {
             .header-content {
@@ -469,6 +499,14 @@
 
             .stats-container {
                 grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 14px;
+            }
+
+            table th, table td {
+                padding: 10px;
             }
         }
     </style>
@@ -530,6 +568,9 @@
             </div>
         </div>
 
+        <!-- منطقة التنبيهات -->
+        <div id="alertContainer"></div>
+
         <!-- أزرار التنقل -->
         <div class="tabs">
             <button class="tab-btn active" data-tab="cash-sales">
@@ -574,15 +615,7 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label for="cashCarType">نوع السيارة *</label>
-                            <select id="cashCarType" required>
-                                <option value="">اختر نوع السيارة</option>
-                                <option value="سيدان">سيدان</option>
-                                <option value="SUV">SUV</option>
-                                <option value="هايبرد">هايبرد</option>
-                                <option value="كهربائية">كهربائية</option>
-                                <option value="بيك أب">بيك أب</option>
-                                <option value="فان">فان</option>
-                            </select>
+                            <input type="text" id="cashCarType" placeholder="مثال: سيدان، SUV، هايبرد..." required>
                         </div>
                         <div class="form-group">
                             <label for="cashCarModel">الموديل *</label>
@@ -631,7 +664,6 @@
                         </tr>
                     </thead>
                     <tbody id="cashSalesBody">
-                        <!-- سيتم ملؤها بالبيانات من Firebase -->
                     </tbody>
                 </table>
             </div>
@@ -665,15 +697,7 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label for="installmentCarType">نوع السيارة *</label>
-                            <select id="installmentCarType" required>
-                                <option value="">اختر نوع السيارة</option>
-                                <option value="سيدان">سيدان</option>
-                                <option value="SUV">SUV</option>
-                                <option value="هايبرد">هايبرد</option>
-                                <option value="كهربائية">كهربائية</option>
-                                <option value="بيك أب">بيك أب</option>
-                                <option value="فان">فان</option>
-                            </select>
+                            <input type="text" id="installmentCarType" placeholder="مثال: سيدان، SUV، هايبرد..." required>
                         </div>
                         <div class="form-group">
                             <label for="installmentCarModel">الموديل *</label>
@@ -744,7 +768,6 @@
                         </tr>
                     </thead>
                     <tbody id="installmentSalesBody">
-                        <!-- سيتم ملؤها بالبيانات من Firebase -->
                     </tbody>
                 </table>
             </div>
@@ -801,7 +824,6 @@
                         </tr>
                     </thead>
                     <tbody id="expensesBody">
-                        <!-- سيتم ملؤها بالبيانات من Firebase -->
                     </tbody>
                 </table>
             </div>
@@ -864,7 +886,6 @@
                         </tr>
                     </thead>
                     <tbody id="reportBody">
-                        <!-- سيتم ملؤها بناءً على التقرير -->
                     </tbody>
                 </table>
             </div>
@@ -892,14 +913,11 @@
                 </div>
             </div>
         </div>
-
-        <!-- منطقة التنبيهات -->
-        <div id="alertContainer"></div>
     </div>
 
     <footer class="container">
         <p>تطبيق مبيعاتي &copy; <span id="currentYear"></span> - جميع الحقوق محفوظة</p>
-        <p>تم التطوير بواسطة المهندس حسين نقد    </p>
+        <p>تم التطوير بواسطة المهندس حسين نقد</p>
     </footer>
 
     <script>
@@ -912,44 +930,42 @@
             storageBucket: "cars-sales-991c4.firebasestorage.app",
             messagingSenderId: "959123900406",
             appId: "1:959123900406:web:0b0c670c3b65540e7369d7"
-            
         };
 
-
-        // تهيئة Firebase (في تطبيق حقيقي، استخدم بيانات مشروعك الخاص)
-        firebase.initializeApp(firebaseConfig);
+        // تهيئة Firebase
+        try {
+            firebase.initializeApp(firebaseConfig);
+        } catch (e) {
+            console.log('Firebase already initialized');
+        }
         const db = firebase.firestore();
-        
-        // لمحاكاة قاعدة البيانات في هذا المثال، سنستخدم LocalStorage
-        // في التطبيق الحقيقي، استبدل هذا الكود بـ Firebase Firestore
         
         // متغيرات التطبيق
         let currentEditId = null;
         let currentEditType = null;
+        let allCashSales = [];
+        let allInstallmentSales = [];
+        let allExpenses = [];
         
         // تهيئة التطبيق عند تحميل الصفحة
         document.addEventListener('DOMContentLoaded', function() {
-            // تعيين السنة الحالية في التذييل
             document.getElementById('currentYear').textContent = new Date().getFullYear();
             
-            // تعيين التاريخ الحالي في جميع حقول التاريخ
-            const today = new Date().toISOString().split('T')[0];
-            document.querySelectorAll('input[type="date"]').forEach(input => {
-                input.value = today;
-            });
-            
-            // تهيئة نظام التبويب
+            setDefaultDates();
             initTabs();
-            
-            // تهيئة النماذج
             initForms();
-            
-            // تحميل البيانات من التخزين المحلي
             loadData();
-            
-            // تحديث الإحصائيات
-            updateStats();
         });
+
+        function setDefaultDates() {
+            const today = new Date().toISOString().split('T')[0];
+            const allDateInputs = document.querySelectorAll('input[type="date"]');
+            allDateInputs.forEach(input => {
+                if (!input.value) {
+                    input.value = today;
+                }
+            });
+        }
         
         // تهيئة نظام التبويب
         function initTabs() {
@@ -960,11 +976,9 @@
                 btn.addEventListener('click', function() {
                     const tabId = this.getAttribute('data-tab');
                     
-                    // إزالة الفئة النشطة من جميع الأزرار والمحتويات
                     tabBtns.forEach(b => b.classList.remove('active'));
                     tabContents.forEach(c => c.classList.remove('active'));
                     
-                    // إضافة الفئة النشطة للزر والمحتوى المحددين
                     this.classList.add('active');
                     document.getElementById(tabId).classList.add('active');
                 });
@@ -973,32 +987,26 @@
         
         // تهيئة النماذج
         function initForms() {
-            // نموذج البيع النقدي
             document.getElementById('cashSaleForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 saveCashSale();
             });
             
-            // نموذج البيع بالتقسيط
             document.getElementById('installmentSaleForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 saveInstallmentSale();
             });
             
-            // نموذج المنصرفات
             document.getElementById('expenseForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 saveExpense();
             });
             
-            // زر توليد التقرير
             document.getElementById('generateReport').addEventListener('click', generateReport);
-            
-            // زر تصدير التقرير
             document.getElementById('exportReport').addEventListener('click', exportReport);
         }
         
-        // حفظ البيع النقدي
+        // حفظ البيع النقدي في Firebase
         function saveCashSale() {
             const cashSale = {
                 date: document.getElementById('cashDate').value,
@@ -1012,38 +1020,35 @@
                 timestamp: new Date().getTime()
             };
             
-            // في تطبيق حقيقي، استخدم:
-            // db.collection('cashSales').add(cashSale)
-            //   .then(() => { ... })
-            //   .catch(error => { ... });
-            
-            // في هذا المثال، نستخدم LocalStorage
-            let cashSales = JSON.parse(localStorage.getItem('cashSales')) || [];
-            
             if (currentEditId && currentEditType === 'cash') {
-                // تعديل سجل موجود
-                const index = cashSales.findIndex(item => item.id === currentEditId);
-                if (index !== -1) {
-                    cashSales[index] = {...cashSale, id: currentEditId};
-                    showAlert('تم تعديل البيع النقدي بنجاح', 'success');
-                }
-                currentEditId = null;
-                currentEditType = null;
+                db.collection('cashSales').doc(currentEditId).update(cashSale)
+                    .then(() => {
+                        showAlert('تم تعديل البيع النقدي بنجاح', 'success');
+                        resetCashForm();
+                    })
+                    .catch(error => {
+                        showAlert('خطأ: ' + error.message, 'error');
+                    });
             } else {
-                // إضافة سجل جديد
-                cashSale.id = 'cash_' + new Date().getTime();
-                cashSales.push(cashSale);
-                showAlert('تم إضافة البيع النقدي بنجاح', 'success');
+                db.collection('cashSales').add(cashSale)
+                    .then(() => {
+                        showAlert('تم إضافة البيع النقدي بنجاح', 'success');
+                        resetCashForm();
+                    })
+                    .catch(error => {
+                        showAlert('خطأ: ' + error.message, 'error');
+                    });
             }
-            
-            localStorage.setItem('cashSales', JSON.stringify(cashSales));
+        }
+
+        function resetCashForm() {
             document.getElementById('cashSaleForm').reset();
+            currentEditId = null;
+            currentEditType = null;
             document.getElementById('cashDate').value = new Date().toISOString().split('T')[0];
-            loadCashSales();
-            updateStats();
         }
         
-        // حفظ البيع بالتقسيط
+        // حفظ البيع بالتقسيط في Firebase
         function saveInstallmentSale() {
             const installmentSale = {
                 date: document.getElementById('installmentDate').value,
@@ -1060,32 +1065,35 @@
                 timestamp: new Date().getTime()
             };
             
-            let installmentSales = JSON.parse(localStorage.getItem('installmentSales')) || [];
-            
             if (currentEditId && currentEditType === 'installment') {
-                // تعديل سجل موجود
-                const index = installmentSales.findIndex(item => item.id === currentEditId);
-                if (index !== -1) {
-                    installmentSales[index] = {...installmentSale, id: currentEditId};
-                    showAlert('تم تعديل البيع بالتقسيط بنجاح', 'success');
-                }
-                currentEditId = null;
-                currentEditType = null;
+                db.collection('installmentSales').doc(currentEditId).update(installmentSale)
+                    .then(() => {
+                        showAlert('تم تعديل البيع بالتقسيط بنجاح', 'success');
+                        resetInstallmentForm();
+                    })
+                    .catch(error => {
+                        showAlert('خطأ: ' + error.message, 'error');
+                    });
             } else {
-                // إضافة سجل جديد
-                installmentSale.id = 'installment_' + new Date().getTime();
-                installmentSales.push(installmentSale);
-                showAlert('تم إضافة البيع بالتقسيط بنجاح', 'success');
+                db.collection('installmentSales').add(installmentSale)
+                    .then(() => {
+                        showAlert('تم إضافة البيع بالتقسيط بنجاح', 'success');
+                        resetInstallmentForm();
+                    })
+                    .catch(error => {
+                        showAlert('خطأ: ' + error.message, 'error');
+                    });
             }
-            
-            localStorage.setItem('installmentSales', JSON.stringify(installmentSales));
+        }
+
+        function resetInstallmentForm() {
             document.getElementById('installmentSaleForm').reset();
+            currentEditId = null;
+            currentEditType = null;
             document.getElementById('installmentDate').value = new Date().toISOString().split('T')[0];
-            loadInstallmentSales();
-            updateStats();
         }
         
-        // حفظ المنصرفات
+        // حفظ المنصرفات في Firebase
         function saveExpense() {
             const expense = {
                 date: document.getElementById('expenseDate').value,
@@ -1095,29 +1103,32 @@
                 timestamp: new Date().getTime()
             };
             
-            let expenses = JSON.parse(localStorage.getItem('expenses')) || [];
-            
             if (currentEditId && currentEditType === 'expense') {
-                // تعديل سجل موجود
-                const index = expenses.findIndex(item => item.id === currentEditId);
-                if (index !== -1) {
-                    expenses[index] = {...expense, id: currentEditId};
-                    showAlert('تم تعديل المنصرفات بنجاح', 'success');
-                }
-                currentEditId = null;
-                currentEditType = null;
+                db.collection('expenses').doc(currentEditId).update(expense)
+                    .then(() => {
+                        showAlert('تم تعديل المنصرفات بنجاح', 'success');
+                        resetExpenseForm();
+                    })
+                    .catch(error => {
+                        showAlert('خطأ: ' + error.message, 'error');
+                    });
             } else {
-                // إضافة سجل جديد
-                expense.id = 'expense_' + new Date().getTime();
-                expenses.push(expense);
-                showAlert('تم إضافة المنصرفات بنجاح', 'success');
+                db.collection('expenses').add(expense)
+                    .then(() => {
+                        showAlert('تم إضافة المنصرفات بنجاح', 'success');
+                        resetExpenseForm();
+                    })
+                    .catch(error => {
+                        showAlert('خطأ: ' + error.message, 'error');
+                    });
             }
-            
-            localStorage.setItem('expenses', JSON.stringify(expenses));
+        }
+
+        function resetExpenseForm() {
             document.getElementById('expenseForm').reset();
+            currentEditId = null;
+            currentEditType = null;
             document.getElementById('expenseDate').value = new Date().toISOString().split('T')[0];
-            loadExpenses();
-            updateStats();
         }
         
         // تحميل البيانات
@@ -1127,244 +1138,265 @@
             loadExpenses();
         }
         
-        // تحميل المبيعات النقدية
+        // تحميل المبيعات النقدية من Firebase
         function loadCashSales() {
-            const cashSales = JSON.parse(localStorage.getItem('cashSales')) || [];
-            const tbody = document.getElementById('cashSalesBody');
-            tbody.innerHTML = '';
-            
-            if (cashSales.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">لا توجد مبيعات نقدية مسجلة</td></tr>';
-                return;
-            }
-            
-            // ترتيب المبيعات حسب التاريخ (الأحدث أولاً)
-            cashSales.sort((a, b) => b.timestamp - a.timestamp);
-            
-            cashSales.forEach(sale => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${formatDate(sale.date)}</td>
-                    <td>${sale.buyerName}</td>
-                    <td>${sale.buyerId}</td>
-                    <td>${sale.carType}</td>
-                    <td>${sale.carModel}</td>
-                    <td>${sale.chassisNumber}</td>
-                    <td>${formatCurrency(sale.amount)}</td>
-                    <td class="action-buttons">
-                        <button class="action-btn edit-btn" onclick="editCashSale('${sale.id}')">
-                            <i class="fas fa-edit"></i> تعديل
-                        </button>
-                        <button class="action-btn delete-btn" onclick="deleteCashSale('${sale.id}')">
-                            <i class="fas fa-trash"></i> حذف
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
+            db.collection('cashSales').orderBy('timestamp', 'desc')
+                .onSnapshot(snapshot => {
+                    const tbody = document.getElementById('cashSalesBody');
+                    tbody.innerHTML = '';
+                    allCashSales = [];
+                    
+                    if (snapshot.empty) {
+                        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 30px;">لا توجد مبيعات نقدية مسجلة</td></tr>';
+                        updateStats();
+                        return;
+                    }
+                    
+                    snapshot.forEach(doc => {
+                        const sale = doc.data();
+                        allCashSales.push({id: doc.id, ...sale});
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${formatDate(sale.date)}</td>
+                            <td>${sale.buyerName}</td>
+                            <td>${sale.buyerId}</td>
+                            <td>${sale.carType}</td>
+                            <td>${sale.carModel}</td>
+                            <td>${sale.chassisNumber}</td>
+                            <td>${formatCurrency(sale.amount)}</td>
+                            <td class="action-buttons">
+                                <button class="action-btn edit-btn" onclick="editCashSale('${doc.id}')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="action-btn delete-btn" onclick="deleteCashSale('${doc.id}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                    updateStats();
+                })
+                .catch(error => {
+                    console.error('خطأ في تحميل المبيعات النقدية:', error);
+                });
         }
         
-        // تحميل المبيعات بالتقسيط
+        // تحميل المبيعات بالتقسيط من Firebase
         function loadInstallmentSales() {
-            const installmentSales = JSON.parse(localStorage.getItem('installmentSales')) || [];
-            const tbody = document.getElementById('installmentSalesBody');
-            tbody.innerHTML = '';
-            
-            if (installmentSales.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="11" style="text-align: center;">لا توجد مبيعات بالتقسيط مسجلة</td></tr>';
-                return;
-            }
-            
-            // ترتيب المبيعات حسب التاريخ (الأحدث أولاً)
-            installmentSales.sort((a, b) => b.timestamp - a.timestamp);
-            
-            installmentSales.forEach(sale => {
-                const statusClass = `status-${sale.status}`;
-                const statusText = sale.status === 'paid' ? 'مسدد' : 
-                                 sale.status === 'pending' ? 'قيد الدفع' : 'متأخر';
-                
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${formatDate(sale.date)}</td>
-                    <td>${sale.buyerName}</td>
-                    <td>${sale.buyerId}</td>
-                    <td>${sale.carType}</td>
-                    <td>${sale.carModel}</td>
-                    <td>${sale.chassisNumber}</td>
-                    <td>${formatCurrency(sale.amount)}</td>
-                    <td>${sale.installments}</td>
-                    <td>${formatCurrency(sale.firstPayment)}</td>
-                    <td><span class="status ${statusClass}">${statusText}</span></td>
-                    <td class="action-buttons">
-                        <button class="action-btn edit-btn" onclick="editInstallmentSale('${sale.id}')">
-                            <i class="fas fa-edit"></i> تعديل
-                        </button>
-                        <button class="action-btn delete-btn" onclick="deleteInstallmentSale('${sale.id}')">
-                            <i class="fas fa-trash"></i> حذف
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
+            db.collection('installmentSales').orderBy('timestamp', 'desc')
+                .onSnapshot(snapshot => {
+                    const tbody = document.getElementById('installmentSalesBody');
+                    tbody.innerHTML = '';
+                    allInstallmentSales = [];
+                    
+                    if (snapshot.empty) {
+                        tbody.innerHTML = '<tr><td colspan="11" style="text-align: center; padding: 30px;">لا توجد مبيعات بالتقسيط مسجلة</td></tr>';
+                        updateStats();
+                        return;
+                    }
+                    
+                    snapshot.forEach(doc => {
+                        const sale = doc.data();
+                        allInstallmentSales.push({id: doc.id, ...sale});
+                        const statusClass = `status-${sale.status}`;
+                        const statusText = sale.status === 'paid' ? 'مسدد' : 
+                                         sale.status === 'pending' ? 'قيد الدفع' : 'متأخر';
+                        
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${formatDate(sale.date)}</td>
+                            <td>${sale.buyerName}</td>
+                            <td>${sale.buyerId}</td>
+                            <td>${sale.carType}</td>
+                            <td>${sale.carModel}</td>
+                            <td>${sale.chassisNumber}</td>
+                            <td>${formatCurrency(sale.amount)}</td>
+                            <td>${sale.installments}</td>
+                            <td>${formatCurrency(sale.firstPayment)}</td>
+                            <td><span class="status ${statusClass}">${statusText}</span></td>
+                            <td class="action-buttons">
+                                <button class="action-btn edit-btn" onclick="editInstallmentSale('${doc.id}')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="action-btn delete-btn" onclick="deleteInstallmentSale('${doc.id}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                    updateStats();
+                })
+                .catch(error => {
+                    console.error('خطأ في تحميل المبيعات بالتقسيط:', error);
+                });
         }
         
-        // تحميل المنصرفات
+        // تحميل المنصرفات من Firebase
         function loadExpenses() {
-            const expenses = JSON.parse(localStorage.getItem('expenses')) || [];
-            const tbody = document.getElementById('expensesBody');
-            tbody.innerHTML = '';
-            
-            if (expenses.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">لا توجد منصرفات مسجلة</td></tr>';
-                return;
-            }
-            
-            // ترتيب المنصرفات حسب التاريخ (الأحدث أولاً)
-            expenses.sort((a, b) => b.timestamp - a.timestamp);
-            
-            expenses.forEach(expense => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${formatDate(expense.date)}</td>
-                    <td>${expense.description}</td>
-                    <td>${formatCurrency(expense.amount)}</td>
-                    <td class="action-buttons">
-                        <button class="action-btn edit-btn" onclick="editExpense('${expense.id}')">
-                            <i class="fas fa-edit"></i> تعديل
-                        </button>
-                        <button class="action-btn delete-btn" onclick="deleteExpense('${expense.id}')">
-                            <i class="fas fa-trash"></i> حذف
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
+            db.collection('expenses').orderBy('timestamp', 'desc')
+                .onSnapshot(snapshot => {
+                    const tbody = document.getElementById('expensesBody');
+                    tbody.innerHTML = '';
+                    allExpenses = [];
+                    
+                    if (snapshot.empty) {
+                        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 30px;">لا توجد منصرفات مسجلة</td></tr>';
+                        updateStats();
+                        return;
+                    }
+                    
+                    snapshot.forEach(doc => {
+                        const expense = doc.data();
+                        allExpenses.push({id: doc.id, ...expense});
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${formatDate(expense.date)}</td>
+                            <td>${expense.description}</td>
+                            <td>${formatCurrency(expense.amount)}</td>
+                            <td class="action-buttons">
+                                <button class="action-btn edit-btn" onclick="editExpense('${doc.id}')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="action-btn delete-btn" onclick="deleteExpense('${doc.id}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                    updateStats();
+                })
+                .catch(error => {
+                    console.error('خطأ في تحميل المنصرفات:', error);
+                });
         }
         
         // تعديل بيع نقدي
         function editCashSale(id) {
-            const cashSales = JSON.parse(localStorage.getItem('cashSales')) || [];
-            const sale = cashSales.find(item => item.id === id);
+            const sale = allCashSales.find(s => s.id === id);
+            if (!sale) return;
             
-            if (sale) {
-                document.getElementById('cashDate').value = sale.date;
-                document.getElementById('cashBuyerName').value = sale.buyerName;
-                document.getElementById('cashBuyerId').value = sale.buyerId;
-                document.getElementById('cashCarType').value = sale.carType;
-                document.getElementById('cashCarModel').value = sale.carModel;
-                document.getElementById('cashChassisNumber').value = sale.chassisNumber;
-                document.getElementById('cashAmount').value = sale.amount;
-                
-                currentEditId = id;
-                currentEditType = 'cash';
-                
-                // التمرير إلى أعلى النموذج
-                document.getElementById('cash-sales').scrollIntoView({ behavior: 'smooth' });
-                
-                showAlert('يمكنك الآن تعديل بيانات البيع النقدي', 'success');
-            }
+            document.getElementById('cashDate').value = sale.date;
+            document.getElementById('cashBuyerName').value = sale.buyerName;
+            document.getElementById('cashBuyerId').value = sale.buyerId;
+            document.getElementById('cashCarType').value = sale.carType;
+            document.getElementById('cashCarModel').value = sale.carModel;
+            document.getElementById('cashChassisNumber').value = sale.chassisNumber;
+            document.getElementById('cashAmount').value = sale.amount;
+            
+            currentEditId = id;
+            currentEditType = 'cash';
+            
+            document.querySelector('button[data-tab="cash-sales"]').click();
+            document.querySelector('.form-container').scrollIntoView({ behavior: 'smooth' });
+            showAlert('يمكنك الآن تعديل بيانات البيع النقدي', 'success');
         }
         
         // تعديل بيع بالتقسيط
         function editInstallmentSale(id) {
-            const installmentSales = JSON.parse(localStorage.getItem('installmentSales')) || [];
-            const sale = installmentSales.find(item => item.id === id);
+            const sale = allInstallmentSales.find(s => s.id === id);
+            if (!sale) return;
             
-            if (sale) {
-                document.getElementById('installmentDate').value = sale.date;
-                document.getElementById('installmentBuyerName').value = sale.buyerName;
-                document.getElementById('installmentBuyerId').value = sale.buyerId;
-                document.getElementById('installmentCarType').value = sale.carType;
-                document.getElementById('installmentCarModel').value = sale.carModel;
-                document.getElementById('installmentChassisNumber').value = sale.chassisNumber;
-                document.getElementById('installmentAmount').value = sale.amount;
-                document.getElementById('installmentInstallments').value = sale.installments;
-                document.getElementById('installmentFirstPayment').value = sale.firstPayment;
-                document.getElementById('installmentStatus').value = sale.status;
-                
-                currentEditId = id;
-                currentEditType = 'installment';
-                
-                // التمرير إلى أعلى النموذج
-                document.getElementById('installment-sales').scrollIntoView({ behavior: 'smooth' });
-                
-                showAlert('يمكنك الآن تعديل بيانات البيع بالتقسيط', 'success');
-            }
+            document.getElementById('installmentDate').value = sale.date;
+            document.getElementById('installmentBuyerName').value = sale.buyerName;
+            document.getElementById('installmentBuyerId').value = sale.buyerId;
+            document.getElementById('installmentCarType').value = sale.carType;
+            document.getElementById('installmentCarModel').value = sale.carModel;
+            document.getElementById('installmentChassisNumber').value = sale.chassisNumber;
+            document.getElementById('installmentAmount').value = sale.amount;
+            document.getElementById('installmentInstallments').value = sale.installments;
+            document.getElementById('installmentFirstPayment').value = sale.firstPayment;
+            document.getElementById('installmentStatus').value = sale.status;
+            
+            currentEditId = id;
+            currentEditType = 'installment';
+            
+            document.querySelector('button[data-tab="installment-sales"]').click();
+            document.querySelectorAll('.form-container')[1].scrollIntoView({ behavior: 'smooth' });
+            showAlert('يمكنك الآن تعديل بيانات البيع بالتقسيط', 'success');
         }
         
         // تعديل منصرفات
         function editExpense(id) {
-            const expenses = JSON.parse(localStorage.getItem('expenses')) || [];
-            const expense = expenses.find(item => item.id === id);
+            const expense = allExpenses.find(e => e.id === id);
+            if (!expense) return;
             
-            if (expense) {
-                document.getElementById('expenseDate').value = expense.date;
-                document.getElementById('expenseDescription').value = expense.description;
-                document.getElementById('expenseAmount').value = expense.amount;
-                
-                currentEditId = id;
-                currentEditType = 'expense';
-                
-                // التمرير إلى أعلى النموذج
-                document.getElementById('expenses').scrollIntoView({ behavior: 'smooth' });
-                
-                showAlert('يمكنك الآن تعديل بيانات المنصرفات', 'success');
-            }
+            document.getElementById('expenseDate').value = expense.date;
+            document.getElementById('expenseDescription').value = expense.description;
+            document.getElementById('expenseAmount').value = expense.amount;
+            
+            currentEditId = id;
+            currentEditType = 'expense';
+            
+            document.querySelector('button[data-tab="expenses"]').click();
+            document.querySelectorAll('.form-container')[2].scrollIntoView({ behavior: 'smooth' });
+            showAlert('يمكنك الآن تعديل بيانات المنصرفات', 'success');
         }
         
         // حذف بيع نقدي
         function deleteCashSale(id) {
             if (confirm('هل أنت متأكد من حذف هذا البيع النقدي؟')) {
-                let cashSales = JSON.parse(localStorage.getItem('cashSales')) || [];
-                cashSales = cashSales.filter(item => item.id !== id);
-                localStorage.setItem('cashSales', JSON.stringify(cashSales));
-                
-                loadCashSales();
-                updateStats();
-                showAlert('تم حذف البيع النقدي بنجاح', 'success');
+                db.collection('cashSales').doc(id).delete()
+                    .then(() => {
+                        showAlert('تم حذف البيع النقدي بنجاح', 'success');
+                    })
+                    .catch(error => {
+                        showAlert('خطأ: ' + error.message, 'error');
+                    });
             }
         }
         
         // حذف بيع بالتقسيط
         function deleteInstallmentSale(id) {
             if (confirm('هل أنت متأكد من حذف هذا البيع بالتقسيط؟')) {
-                let installmentSales = JSON.parse(localStorage.getItem('installmentSales')) || [];
-                installmentSales = installmentSales.filter(item => item.id !== id);
-                localStorage.setItem('installmentSales', JSON.stringify(installmentSales));
-                
-                loadInstallmentSales();
-                updateStats();
-                showAlert('تم حذف البيع بالتقسيط بنجاح', 'success');
+                db.collection('installmentSales').doc(id).delete()
+                    .then(() => {
+                        showAlert('تم حذف البيع بالتقسيط بنجاح', 'success');
+                    })
+                    .catch(error => {
+                        showAlert('خطأ: ' + error.message, 'error');
+                    });
             }
         }
         
         // حذف منصرفات
         function deleteExpense(id) {
             if (confirm('هل أنت متأكد من حذف هذه المنصرفات؟')) {
-                let expenses = JSON.parse(localStorage.getItem('expenses')) || [];
-                expenses = expenses.filter(item => item.id !== id);
-                localStorage.setItem('expenses', JSON.stringify(expenses));
-                
-                loadExpenses();
-                updateStats();
-                showAlert('تم حذف المنصرفات بنجاح', 'success');
+                db.collection('expenses').doc(id).delete()
+                    .then(() => {
+                        showAlert('تم حذف المنصرفات بنجاح', 'success');
+                    })
+                    .catch(error => {
+                        showAlert('خطأ: ' + error.message, 'error');
+                    });
             }
         }
         
         // تحديث الإحصائيات
         function updateStats() {
-            const cashSales = JSON.parse(localStorage.getItem('cashSales')) || [];
-            const installmentSales = JSON.parse(localStorage.getItem('installmentSales')) || [];
-            const expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+            let totalCash = 0;
+            let totalInstallment = 0;
+            let totalExpenses = 0;
             
-            const totalCash = cashSales.reduce((sum, sale) => sum + sale.amount, 0);
-            const totalInstallment = installmentSales.reduce((sum, sale) => sum + sale.amount, 0);
-            const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
-            const netRevenue = totalCash + totalInstallment - totalExpenses;
+            allCashSales.forEach(sale => {
+                totalCash += sale.amount;
+            });
+            
+            allInstallmentSales.forEach(sale => {
+                totalInstallment += sale.amount;
+            });
+            
+            allExpenses.forEach(expense => {
+                totalExpenses += expense.amount;
+            });
             
             document.getElementById('totalCash').textContent = formatCurrency(totalCash);
             document.getElementById('totalInstallment').textContent = formatCurrency(totalInstallment);
             document.getElementById('totalExpenses').textContent = formatCurrency(totalExpenses);
+            
+            const netRevenue = totalCash + totalInstallment - totalExpenses;
             document.getElementById('netRevenue').textContent = formatCurrency(netRevenue);
         }
         
@@ -1374,15 +1406,10 @@
             const endDate = document.getElementById('reportEndDate').value;
             const reportType = document.getElementById('reportType').value;
             
-            const cashSales = JSON.parse(localStorage.getItem('cashSales')) || [];
-            const installmentSales = JSON.parse(localStorage.getItem('installmentSales')) || [];
-            const expenses = JSON.parse(localStorage.getItem('expenses')) || [];
-            
             let allData = [];
             
-            // إضافة المبيعات النقدية إذا كانت مطلوبة
             if (reportType === 'all' || reportType === 'cash') {
-                cashSales.forEach(sale => {
+                allCashSales.forEach(sale => {
                     allData.push({
                         ...sale,
                         displayType: 'بيع نقدي',
@@ -1394,9 +1421,8 @@
                 });
             }
             
-            // إضافة المبيعات بالتقسيط إذا كانت مطلوبة
             if (reportType === 'all' || reportType === 'installment') {
-                installmentSales.forEach(sale => {
+                allInstallmentSales.forEach(sale => {
                     const statusText = sale.status === 'paid' ? 'مسدد' : 
                                      sale.status === 'pending' ? 'قيد الدفع' : 'متأخر';
                     
@@ -1411,9 +1437,8 @@
                 });
             }
             
-            // إضافة المنصرفات إذا كانت مطلوبة
             if (reportType === 'all' || reportType === 'expenses') {
-                expenses.forEach(expense => {
+                allExpenses.forEach(expense => {
                     allData.push({
                         ...expense,
                         displayType: 'منصرفات',
@@ -1425,7 +1450,10 @@
                 });
             }
             
-            // تصفية البيانات حسب التاريخ إذا تم تحديده
+            displayReport(allData, startDate, endDate);
+        }
+        
+        function displayReport(allData, startDate, endDate) {
             if (startDate) {
                 allData = allData.filter(item => item.date >= startDate);
             }
@@ -1434,17 +1462,14 @@
                 allData = allData.filter(item => item.date <= endDate);
             }
             
-            // ترتيب البيانات حسب التاريخ (الأحدث أولاً)
             allData.sort((a, b) => new Date(b.date) - new Date(a.date));
             
-            // عرض البيانات في الجدول
             const tbody = document.getElementById('reportBody');
             tbody.innerHTML = '';
             
             if (allData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">لا توجد بيانات ضمن معايير البحث المحددة</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 30px;">لا توجد بيانات ضمن معايير البحث المحددة</td></tr>';
                 
-                // إعادة تعيين الملخص
                 document.getElementById('reportCashTotal').textContent = '0 AED';
                 document.getElementById('reportInstallmentTotal').textContent = '0 AED';
                 document.getElementById('reportExpensesTotal').textContent = '0 AED';
@@ -1470,7 +1495,6 @@
                 `;
                 tbody.appendChild(row);
                 
-                // تحديث المجاميع
                 if (item.type === 'cash') {
                     reportCashTotal += item.amount;
                 } else if (item.type === 'installment') {
@@ -1480,7 +1504,6 @@
                 }
             });
             
-            // تحديث ملخص التقرير
             const reportNetTotal = reportCashTotal + reportInstallmentTotal - reportExpensesTotal;
             
             document.getElementById('reportCashTotal').textContent = formatCurrency(reportCashTotal);
@@ -1494,40 +1517,36 @@
         // تصدير التقرير
         function exportReport() {
             const reportBody = document.getElementById('reportBody');
-            if (reportBody.children.length === 0 || reportBody.children[0].children.length === 1) {
+            const rows = reportBody.querySelectorAll('tr');
+            
+            if (rows.length === 0 || (rows.length === 1 && rows[0].children.length === 1)) {
                 showAlert('لا توجد بيانات لتصديرها. يرجى توليد التقرير أولاً.', 'error');
                 return;
             }
             
-            // في تطبيق حقيقي، هنا يمكنك إضافة كود لتصدير البيانات إلى Excel أو PDF
-            // لهذا المثال، سنقوم بإنشاء ملف CSV بسيط
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "نوع المعاملة,التاريخ,البيان,المشتري/المنصرفات,الهوية,المبلغ(AED),التفاصيل\n";
             
-            let csvContent = "نوع المعاملة,التاريخ,البيان,المشتري/المنصرفات,الهوية,المبلغ(AED),التفاصيل\n";
-            
-            const rows = document.querySelectorAll('#reportBody tr');
             rows.forEach(row => {
                 const cells = row.querySelectorAll('td');
                 if (cells.length > 1) {
-                    const rowData = Array.from(cells).map(cell => `"${cell.textContent}"`).join(',');
+                    const rowData = Array.from(cells).map(cell => `"${cell.textContent.trim()}"`).join(',');
                     csvContent += rowData + '\n';
                 }
             });
             
-            // إضافة ملخص التقرير
-            csvContent += `\n\nملخص التقرير\n`;
-            csvContent += `إجمالي المبيعات النقدية,${document.getElementById('reportCashTotal').textContent}\n`;
-            csvContent += `إجمالي المبيعات بالتقسيط,${document.getElementById('reportInstallmentTotal').textContent}\n`;
-            csvContent += `إجمالي المنصرفات,${document.getElementById('reportExpensesTotal').textContent}\n`;
-            csvContent += `صافي الإيرادات,${document.getElementById('reportNetTotal').textContent}\n`;
+            csvContent += "\n,ملخص التقرير,,,,,\n";
+            csvContent += `,إجمالي المبيعات النقدية,${document.getElementById('reportCashTotal').textContent},,,\n`;
+            csvContent += `,إجمالي المبيعات بالتقسيط,${document.getElementById('reportInstallmentTotal').textContent},,,\n`;
+            csvContent += `,إجمالي المنصرفات,${document.getElementById('reportExpensesTotal').textContent},,,\n`;
+            csvContent += `,صافي الإيرادات,${document.getElementById('reportNetTotal').textContent},,,\n`;
             
-            // إنشاء ملف وتنزيله
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const encodedUri = encodeURI(csvContent);
             const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            link.setAttribute('href', url);
+            link.setAttribute('href', encodedUri);
             link.setAttribute('download', `تقرير_مبيعاتي_${new Date().toISOString().split('T')[0]}.csv`);
-            link.style.visibility = 'hidden';
             document.body.appendChild(link);
+            
             link.click();
             document.body.removeChild(link);
             
@@ -1545,17 +1564,16 @@
                 <span>${message}</span>
             `;
             
-            alertContainer.appendChild(alertDiv);
+            alertContainer.insertBefore(alertDiv, alertContainer.firstChild);
             
-            // إزالة التنبيه بعد 5 ثوانٍ
             setTimeout(() => {
                 alertDiv.remove();
-            }, 5000);
+            }, 4000);
         }
         
         // تنسيق التاريخ
         function formatDate(dateString) {
-            const date = new Date(dateString);
+            const date = new Date(dateString + 'T00:00:00');
             return date.toLocaleDateString('ar-EG', {
                 year: 'numeric',
                 month: 'long',
@@ -1568,7 +1586,7 @@
             return new Intl.NumberFormat('ar-EG', {
                 style: 'currency',
                 currency: 'AED',
-                minimumFractionDigits: 2
+                minimumFractionDigits: 
             }).format(amount);
         }
     </script>
