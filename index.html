@@ -1,0 +1,1576 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تطبيق مبيعاتي</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <!-- Font Awesome للرموز -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- خط عربي -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding-bottom: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        /* الترويسة */
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            box-shadow: var(--box-shadow);
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo i {
+            font-size: 28px;
+        }
+
+        .logo h1 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .currency-info {
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 8px 15px;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+        }
+
+        /* التنقل */
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            background-color: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            margin-bottom: 25px;
+            box-shadow: var(--box-shadow);
+        }
+
+        .tab-btn {
+            flex: 1;
+            min-width: 150px;
+            padding: 15px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--dark-color);
+            transition: var(--transition);
+            text-align: center;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab-btn:hover {
+            background-color: var(--light-color);
+        }
+
+        .tab-btn.active {
+            color: var(--secondary-color);
+            border-bottom-color: var(--secondary-color);
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+
+        .tab-btn i {
+            margin-left: 8px;
+        }
+
+        /* المحتوى */
+        .tab-content {
+            display: none;
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--box-shadow);
+            margin-bottom: 25px;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-title {
+            font-size: 20px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--light-color);
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            color: var(--secondary-color);
+        }
+
+        /* النماذج */
+        .form-container {
+            background-color: #f9f9f9;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 25px;
+            border: 1px solid #eee;
+        }
+
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            transition: var(--transition);
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            border-color: var(--secondary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #229954;
+        }
+
+        .btn-warning {
+            background-color: var(--warning-color);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background-color: #d68910;
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #cb4335;
+        }
+
+        /* الجداول */
+        .table-container {
+            overflow-x: auto;
+            border-radius: var(--border-radius);
+            border: 1px solid #eee;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        table thead {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        table th {
+            padding: 15px;
+            text-align: right;
+            font-weight: 600;
+        }
+
+        table tbody tr {
+            border-bottom: 1px solid #eee;
+            transition: var(--transition);
+        }
+
+        table tbody tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        table td {
+            padding: 12px 15px;
+            text-align: right;
+        }
+
+        .status {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .status-paid {
+            background-color: rgba(39, 174, 96, 0.2);
+            color: var(--success-color);
+        }
+
+        .status-pending {
+            background-color: rgba(243, 156, 18, 0.2);
+            color: var(--warning-color);
+        }
+
+        .status-overdue {
+            background-color: rgba(231, 76, 60, 0.2);
+            color: var(--danger-color);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .action-btn {
+            padding: 5px 10px;
+            border-radius: 4px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        .edit-btn {
+            color: var(--secondary-color);
+        }
+
+        .edit-btn:hover {
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+
+        .delete-btn {
+            color: var(--danger-color);
+        }
+
+        .delete-btn:hover {
+            background-color: rgba(231, 76, 60, 0.1);
+        }
+
+        /* الإحصائيات */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--box-shadow);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+        }
+
+        .stat-icon.cash {
+            background-color: var(--success-color);
+        }
+
+        .stat-icon.installment {
+            background-color: var(--secondary-color);
+        }
+
+        .stat-icon.expenses {
+            background-color: var(--warning-color);
+        }
+
+        .stat-icon.total {
+            background-color: var(--primary-color);
+        }
+
+        .stat-info h3 {
+            font-size: 14px;
+            color: #777;
+            margin-bottom: 5px;
+        }
+
+        .stat-info .amount {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--dark-color);
+        }
+
+        /* التنبيهات */
+        .alert {
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-success {
+            background-color: rgba(39, 174, 96, 0.1);
+            color: var(--success-color);
+            border: 1px solid rgba(39, 174, 96, 0.2);
+        }
+
+        .alert-error {
+            background-color: rgba(231, 76, 60, 0.1);
+            color: var(--danger-color);
+            border: 1px solid rgba(231, 76, 60, 0.2);
+        }
+
+        /* التذييل */
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #777;
+            font-size: 14px;
+        }
+
+        /* التجاوب مع الشاشات الصغيرة */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .tab-btn {
+                min-width: 120px;
+                padding: 12px 15px;
+                font-size: 14px;
+            }
+
+            .form-group {
+                min-width: 100%;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-chart-line"></i>
+                    <h1>تطبيق مبيعاتي</h1>
+                </div>
+                <div class="currency-info">
+                    <i class="fas fa-money-bill-wave"></i>
+                    العملة: الدرهم الإماراتي (AED)
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- إحصائيات سريعة -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-icon cash">
+                    <i class="fas fa-money-bill"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>إجمالي المبيعات النقدية</h3>
+                    <div class="amount" id="totalCash">0 AED</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon installment">
+                    <i class="fas fa-credit-card"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>إجمالي المبيعات بالتقسيط</h3>
+                    <div class="amount" id="totalInstallment">0 AED</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon expenses">
+                    <i class="fas fa-hand-holding-usd"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>إجمالي المنصرفات</h3>
+                    <div class="amount" id="totalExpenses">0 AED</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon total">
+                    <i class="fas fa-calculator"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>صافي الإيرادات</h3>
+                    <div class="amount" id="netRevenue">0 AED</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- أزرار التنقل -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="cash-sales">
+                <i class="fas fa-money-bill"></i> البيع النقدي
+            </button>
+            <button class="tab-btn" data-tab="installment-sales">
+                <i class="fas fa-credit-card"></i> البيع بالتقسيط
+            </button>
+            <button class="tab-btn" data-tab="expenses">
+                <i class="fas fa-hand-holding-usd"></i> المنصرفات
+            </button>
+            <button class="tab-btn" data-tab="reports">
+                <i class="fas fa-chart-bar"></i> التقارير
+            </button>
+        </div>
+
+        <!-- قسم البيع النقدي -->
+        <div id="cash-sales" class="tab-content active">
+            <h2 class="section-title">
+                <i class="fas fa-money-bill"></i> البيع النقدي
+            </h2>
+            
+            <!-- نموذج إضافة بيع نقدي -->
+            <div class="form-container">
+                <h3>إضافة بيع نقدي جديد</h3>
+                <form id="cashSaleForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cashDate">التاريخ *</label>
+                            <input type="date" id="cashDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="cashBuyerName">اسم المشتري *</label>
+                            <input type="text" id="cashBuyerName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="cashBuyerId">الهوية *</label>
+                            <input type="text" id="cashBuyerId" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cashCarType">نوع السيارة *</label>
+                            <select id="cashCarType" required>
+                                <option value="">اختر نوع السيارة</option>
+                                <option value="سيدان">سيدان</option>
+                                <option value="SUV">SUV</option>
+                                <option value="هايبرد">هايبرد</option>
+                                <option value="كهربائية">كهربائية</option>
+                                <option value="بيك أب">بيك أب</option>
+                                <option value="فان">فان</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="cashCarModel">الموديل *</label>
+                            <input type="text" id="cashCarModel" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="cashChassisNumber">رقم الشاسي *</label>
+                            <input type="text" id="cashChassisNumber" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cashAmount">المبلغ (AED) *</label>
+                            <input type="number" id="cashAmount" min="0" step="0.01" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="reset" class="btn btn-warning">
+                            <i class="fas fa-undo"></i> إعادة تعيين
+                        </button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save"></i> حفظ البيع النقدي
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- جدول المبيعات النقدية -->
+            <h3 class="section-title">
+                <i class="fas fa-list"></i> سجل المبيعات النقدية
+            </h3>
+            <div class="table-container">
+                <table id="cashSalesTable">
+                    <thead>
+                        <tr>
+                            <th>التاريخ</th>
+                            <th>اسم المشتري</th>
+                            <th>الهوية</th>
+                            <th>نوع السيارة</th>
+                            <th>الموديل</th>
+                            <th>رقم الشاسي</th>
+                            <th>المبلغ (AED)</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cashSalesBody">
+                        <!-- سيتم ملؤها بالبيانات من Firebase -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- قسم البيع بالتقسيط -->
+        <div id="installment-sales" class="tab-content">
+            <h2 class="section-title">
+                <i class="fas fa-credit-card"></i> البيع بالتقسيط
+            </h2>
+            
+            <!-- نموذج إضافة بيع بالتقسيط -->
+            <div class="form-container">
+                <h3>إضافة بيع بالتقسيط جديد</h3>
+                <form id="installmentSaleForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="installmentDate">التاريخ *</label>
+                            <input type="date" id="installmentDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="installmentBuyerName">اسم المشتري *</label>
+                            <input type="text" id="installmentBuyerName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="installmentBuyerId">الهوية *</label>
+                            <input type="text" id="installmentBuyerId" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="installmentCarType">نوع السيارة *</label>
+                            <select id="installmentCarType" required>
+                                <option value="">اختر نوع السيارة</option>
+                                <option value="سيدان">سيدان</option>
+                                <option value="SUV">SUV</option>
+                                <option value="هايبرد">هايبرد</option>
+                                <option value="كهربائية">كهربائية</option>
+                                <option value="بيك أب">بيك أب</option>
+                                <option value="فان">فان</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="installmentCarModel">الموديل *</label>
+                            <input type="text" id="installmentCarModel" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="installmentChassisNumber">رقم الشاسي *</label>
+                            <input type="text" id="installmentChassisNumber" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="installmentAmount">المبلغ الإجمالي (AED) *</label>
+                            <input type="number" id="installmentAmount" min="0" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="installmentInstallments">عدد الأقساط *</label>
+                            <input type="number" id="installmentInstallments" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="installmentFirstPayment">الدفعة الأولى (AED) *</label>
+                            <input type="number" id="installmentFirstPayment" min="0" step="0.01" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="installmentStatus">الحالة *</label>
+                            <select id="installmentStatus" required>
+                                <option value="paid">مسدد</option>
+                                <option value="pending">قيد الدفع</option>
+                                <option value="overdue">متأخر</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="reset" class="btn btn-warning">
+                            <i class="fas fa-undo"></i> إعادة تعيين
+                        </button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save"></i> حفظ البيع بالتقسيط
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- جدول المبيعات بالتقسيط -->
+            <h3 class="section-title">
+                <i class="fas fa-list"></i> سجل المبيعات بالتقسيط
+            </h3>
+            <div class="table-container">
+                <table id="installmentSalesTable">
+                    <thead>
+                        <tr>
+                            <th>التاريخ</th>
+                            <th>اسم المشتري</th>
+                            <th>الهوية</th>
+                            <th>نوع السيارة</th>
+                            <th>الموديل</th>
+                            <th>رقم الشاسي</th>
+                            <th>المبلغ (AED)</th>
+                            <th>عدد الأقساط</th>
+                            <th>الدفعة الأولى</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="installmentSalesBody">
+                        <!-- سيتم ملؤها بالبيانات من Firebase -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- قسم المنصرفات -->
+        <div id="expenses" class="tab-content">
+            <h2 class="section-title">
+                <i class="fas fa-hand-holding-usd"></i> المنصرفات
+            </h2>
+            
+            <!-- نموذج إضافة منصرفات -->
+            <div class="form-container">
+                <h3>إضافة منصرفات جديدة</h3>
+                <form id="expenseForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="expenseDate">التاريخ *</label>
+                            <input type="date" id="expenseDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="expenseDescription">بيان المنصرفات *</label>
+                            <input type="text" id="expenseDescription" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="expenseAmount">المبلغ (AED) *</label>
+                            <input type="number" id="expenseAmount" min="0" step="0.01" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="reset" class="btn btn-warning">
+                            <i class="fas fa-undo"></i> إعادة تعيين
+                        </button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save"></i> حفظ المنصرفات
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- جدول المنصرفات -->
+            <h3 class="section-title">
+                <i class="fas fa-list"></i> سجل المنصرفات
+            </h3>
+            <div class="table-container">
+                <table id="expensesTable">
+                    <thead>
+                        <tr>
+                            <th>التاريخ</th>
+                            <th>بيان المنصرفات</th>
+                            <th>المبلغ (AED)</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="expensesBody">
+                        <!-- سيتم ملؤها بالبيانات من Firebase -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- قسم التقارير -->
+        <div id="reports" class="tab-content">
+            <h2 class="section-title">
+                <i class="fas fa-chart-bar"></i> التقارير الشاملة
+            </h2>
+            
+            <!-- مرشحات التقارير -->
+            <div class="form-container">
+                <h3>مرشحات التقرير</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="reportStartDate">من تاريخ</label>
+                        <input type="date" id="reportStartDate">
+                    </div>
+                    <div class="form-group">
+                        <label for="reportEndDate">إلى تاريخ</label>
+                        <input type="date" id="reportEndDate">
+                    </div>
+                    <div class="form-group">
+                        <label for="reportType">نوع التقرير</label>
+                        <select id="reportType">
+                            <option value="all">جميع البيانات</option>
+                            <option value="cash">المبيعات النقدية فقط</option>
+                            <option value="installment">المبيعات بالتقسيط فقط</option>
+                            <option value="expenses">المنصرفات فقط</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" id="generateReport" class="btn btn-primary">
+                        <i class="fas fa-chart-line"></i> توليد التقرير
+                    </button>
+                    <button type="button" id="exportReport" class="btn btn-success">
+                        <i class="fas fa-file-export"></i> تصدير التقرير
+                    </button>
+                </div>
+            </div>
+            
+            <!-- نتائج التقرير -->
+            <h3 class="section-title">
+                <i class="fas fa-file-alt"></i> نتائج التقرير
+            </h3>
+            <div class="table-container">
+                <table id="reportTable">
+                    <thead>
+                        <tr>
+                            <th>النوع</th>
+                            <th>التاريخ</th>
+                            <th>البيان</th>
+                            <th>المشتري/المنصرفات</th>
+                            <th>الهوية</th>
+                            <th>المبلغ (AED)</th>
+                            <th>التفاصيل</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportBody">
+                        <!-- سيتم ملؤها بناءً على التقرير -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- ملخص التقرير -->
+            <div class="form-container">
+                <h3>ملخص التقرير</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>إجمالي المبيعات النقدية:</label>
+                        <div class="amount" id="reportCashTotal">0 AED</div>
+                    </div>
+                    <div class="form-group">
+                        <label>إجمالي المبيعات بالتقسيط:</label>
+                        <div class="amount" id="reportInstallmentTotal">0 AED</div>
+                    </div>
+                    <div class="form-group">
+                        <label>إجمالي المنصرفات:</label>
+                        <div class="amount" id="reportExpensesTotal">0 AED</div>
+                    </div>
+                    <div class="form-group">
+                        <label>صافي الإيرادات:</label>
+                        <div class="amount" id="reportNetTotal">0 AED</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- منطقة التنبيهات -->
+        <div id="alertContainer"></div>
+    </div>
+
+    <footer class="container">
+        <p>تطبيق مبيعاتي &copy; <span id="currentYear"></span> - جميع الحقوق محفوظة</p>
+        <p>تم التطوير بواسطة المهندس حسين نقد    </p>
+    </footer>
+
+    <script>
+        // إعدادات Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBXER_MCv63lO48PXZNNSRvaMBHaZkFAwo",
+            authDomain: "cars-sales-991c4.firebaseapp.com",
+            databaseURL: "https://cars-sales-991c4-default-rtdb.firebaseio.com",
+            projectId: "cars-sales-991c4",
+            storageBucket: "cars-sales-991c4.firebasestorage.app",
+            messagingSenderId: "959123900406",
+            appId: "1:959123900406:web:0b0c670c3b65540e7369d7"
+            
+        };
+
+
+        // تهيئة Firebase (في تطبيق حقيقي، استخدم بيانات مشروعك الخاص)
+        // firebase.initializeApp(firebaseConfig);
+        // const db = firebase.firestore();
+        
+        // لمحاكاة قاعدة البيانات في هذا المثال، سنستخدم LocalStorage
+        // في التطبيق الحقيقي، استبدل هذا الكود بـ Firebase Firestore
+        
+        // متغيرات التطبيق
+        let currentEditId = null;
+        let currentEditType = null;
+        
+        // تهيئة التطبيق عند تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', function() {
+            // تعيين السنة الحالية في التذييل
+            document.getElementById('currentYear').textContent = new Date().getFullYear();
+            
+            // تعيين التاريخ الحالي في جميع حقول التاريخ
+            const today = new Date().toISOString().split('T')[0];
+            document.querySelectorAll('input[type="date"]').forEach(input => {
+                input.value = today;
+            });
+            
+            // تهيئة نظام التبويب
+            initTabs();
+            
+            // تهيئة النماذج
+            initForms();
+            
+            // تحميل البيانات من التخزين المحلي
+            loadData();
+            
+            // تحديث الإحصائيات
+            updateStats();
+        });
+        
+        // تهيئة نظام التبويب
+        function initTabs() {
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // إزالة الفئة النشطة من جميع الأزرار والمحتويات
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+                    
+                    // إضافة الفئة النشطة للزر والمحتوى المحددين
+                    this.classList.add('active');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+        }
+        
+        // تهيئة النماذج
+        function initForms() {
+            // نموذج البيع النقدي
+            document.getElementById('cashSaleForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveCashSale();
+            });
+            
+            // نموذج البيع بالتقسيط
+            document.getElementById('installmentSaleForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveInstallmentSale();
+            });
+            
+            // نموذج المنصرفات
+            document.getElementById('expenseForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveExpense();
+            });
+            
+            // زر توليد التقرير
+            document.getElementById('generateReport').addEventListener('click', generateReport);
+            
+            // زر تصدير التقرير
+            document.getElementById('exportReport').addEventListener('click', exportReport);
+        }
+        
+        // حفظ البيع النقدي
+        function saveCashSale() {
+            const cashSale = {
+                date: document.getElementById('cashDate').value,
+                buyerName: document.getElementById('cashBuyerName').value,
+                buyerId: document.getElementById('cashBuyerId').value,
+                carType: document.getElementById('cashCarType').value,
+                carModel: document.getElementById('cashCarModel').value,
+                chassisNumber: document.getElementById('cashChassisNumber').value,
+                amount: parseFloat(document.getElementById('cashAmount').value),
+                type: 'cash',
+                timestamp: new Date().getTime()
+            };
+            
+            // في تطبيق حقيقي، استخدم:
+            // db.collection('cashSales').add(cashSale)
+            //   .then(() => { ... })
+            //   .catch(error => { ... });
+            
+            // في هذا المثال، نستخدم LocalStorage
+            let cashSales = JSON.parse(localStorage.getItem('cashSales')) || [];
+            
+            if (currentEditId && currentEditType === 'cash') {
+                // تعديل سجل موجود
+                const index = cashSales.findIndex(item => item.id === currentEditId);
+                if (index !== -1) {
+                    cashSales[index] = {...cashSale, id: currentEditId};
+                    showAlert('تم تعديل البيع النقدي بنجاح', 'success');
+                }
+                currentEditId = null;
+                currentEditType = null;
+            } else {
+                // إضافة سجل جديد
+                cashSale.id = 'cash_' + new Date().getTime();
+                cashSales.push(cashSale);
+                showAlert('تم إضافة البيع النقدي بنجاح', 'success');
+            }
+            
+            localStorage.setItem('cashSales', JSON.stringify(cashSales));
+            document.getElementById('cashSaleForm').reset();
+            document.getElementById('cashDate').value = new Date().toISOString().split('T')[0];
+            loadCashSales();
+            updateStats();
+        }
+        
+        // حفظ البيع بالتقسيط
+        function saveInstallmentSale() {
+            const installmentSale = {
+                date: document.getElementById('installmentDate').value,
+                buyerName: document.getElementById('installmentBuyerName').value,
+                buyerId: document.getElementById('installmentBuyerId').value,
+                carType: document.getElementById('installmentCarType').value,
+                carModel: document.getElementById('installmentCarModel').value,
+                chassisNumber: document.getElementById('installmentChassisNumber').value,
+                amount: parseFloat(document.getElementById('installmentAmount').value),
+                installments: parseInt(document.getElementById('installmentInstallments').value),
+                firstPayment: parseFloat(document.getElementById('installmentFirstPayment').value),
+                status: document.getElementById('installmentStatus').value,
+                type: 'installment',
+                timestamp: new Date().getTime()
+            };
+            
+            let installmentSales = JSON.parse(localStorage.getItem('installmentSales')) || [];
+            
+            if (currentEditId && currentEditType === 'installment') {
+                // تعديل سجل موجود
+                const index = installmentSales.findIndex(item => item.id === currentEditId);
+                if (index !== -1) {
+                    installmentSales[index] = {...installmentSale, id: currentEditId};
+                    showAlert('تم تعديل البيع بالتقسيط بنجاح', 'success');
+                }
+                currentEditId = null;
+                currentEditType = null;
+            } else {
+                // إضافة سجل جديد
+                installmentSale.id = 'installment_' + new Date().getTime();
+                installmentSales.push(installmentSale);
+                showAlert('تم إضافة البيع بالتقسيط بنجاح', 'success');
+            }
+            
+            localStorage.setItem('installmentSales', JSON.stringify(installmentSales));
+            document.getElementById('installmentSaleForm').reset();
+            document.getElementById('installmentDate').value = new Date().toISOString().split('T')[0];
+            loadInstallmentSales();
+            updateStats();
+        }
+        
+        // حفظ المنصرفات
+        function saveExpense() {
+            const expense = {
+                date: document.getElementById('expenseDate').value,
+                description: document.getElementById('expenseDescription').value,
+                amount: parseFloat(document.getElementById('expenseAmount').value),
+                type: 'expense',
+                timestamp: new Date().getTime()
+            };
+            
+            let expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+            
+            if (currentEditId && currentEditType === 'expense') {
+                // تعديل سجل موجود
+                const index = expenses.findIndex(item => item.id === currentEditId);
+                if (index !== -1) {
+                    expenses[index] = {...expense, id: currentEditId};
+                    showAlert('تم تعديل المنصرفات بنجاح', 'success');
+                }
+                currentEditId = null;
+                currentEditType = null;
+            } else {
+                // إضافة سجل جديد
+                expense.id = 'expense_' + new Date().getTime();
+                expenses.push(expense);
+                showAlert('تم إضافة المنصرفات بنجاح', 'success');
+            }
+            
+            localStorage.setItem('expenses', JSON.stringify(expenses));
+            document.getElementById('expenseForm').reset();
+            document.getElementById('expenseDate').value = new Date().toISOString().split('T')[0];
+            loadExpenses();
+            updateStats();
+        }
+        
+        // تحميل البيانات
+        function loadData() {
+            loadCashSales();
+            loadInstallmentSales();
+            loadExpenses();
+        }
+        
+        // تحميل المبيعات النقدية
+        function loadCashSales() {
+            const cashSales = JSON.parse(localStorage.getItem('cashSales')) || [];
+            const tbody = document.getElementById('cashSalesBody');
+            tbody.innerHTML = '';
+            
+            if (cashSales.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">لا توجد مبيعات نقدية مسجلة</td></tr>';
+                return;
+            }
+            
+            // ترتيب المبيعات حسب التاريخ (الأحدث أولاً)
+            cashSales.sort((a, b) => b.timestamp - a.timestamp);
+            
+            cashSales.forEach(sale => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${formatDate(sale.date)}</td>
+                    <td>${sale.buyerName}</td>
+                    <td>${sale.buyerId}</td>
+                    <td>${sale.carType}</td>
+                    <td>${sale.carModel}</td>
+                    <td>${sale.chassisNumber}</td>
+                    <td>${formatCurrency(sale.amount)}</td>
+                    <td class="action-buttons">
+                        <button class="action-btn edit-btn" onclick="editCashSale('${sale.id}')">
+                            <i class="fas fa-edit"></i> تعديل
+                        </button>
+                        <button class="action-btn delete-btn" onclick="deleteCashSale('${sale.id}')">
+                            <i class="fas fa-trash"></i> حذف
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        // تحميل المبيعات بالتقسيط
+        function loadInstallmentSales() {
+            const installmentSales = JSON.parse(localStorage.getItem('installmentSales')) || [];
+            const tbody = document.getElementById('installmentSalesBody');
+            tbody.innerHTML = '';
+            
+            if (installmentSales.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="11" style="text-align: center;">لا توجد مبيعات بالتقسيط مسجلة</td></tr>';
+                return;
+            }
+            
+            // ترتيب المبيعات حسب التاريخ (الأحدث أولاً)
+            installmentSales.sort((a, b) => b.timestamp - a.timestamp);
+            
+            installmentSales.forEach(sale => {
+                const statusClass = `status-${sale.status}`;
+                const statusText = sale.status === 'paid' ? 'مسدد' : 
+                                 sale.status === 'pending' ? 'قيد الدفع' : 'متأخر';
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${formatDate(sale.date)}</td>
+                    <td>${sale.buyerName}</td>
+                    <td>${sale.buyerId}</td>
+                    <td>${sale.carType}</td>
+                    <td>${sale.carModel}</td>
+                    <td>${sale.chassisNumber}</td>
+                    <td>${formatCurrency(sale.amount)}</td>
+                    <td>${sale.installments}</td>
+                    <td>${formatCurrency(sale.firstPayment)}</td>
+                    <td><span class="status ${statusClass}">${statusText}</span></td>
+                    <td class="action-buttons">
+                        <button class="action-btn edit-btn" onclick="editInstallmentSale('${sale.id}')">
+                            <i class="fas fa-edit"></i> تعديل
+                        </button>
+                        <button class="action-btn delete-btn" onclick="deleteInstallmentSale('${sale.id}')">
+                            <i class="fas fa-trash"></i> حذف
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        // تحميل المنصرفات
+        function loadExpenses() {
+            const expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+            const tbody = document.getElementById('expensesBody');
+            tbody.innerHTML = '';
+            
+            if (expenses.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">لا توجد منصرفات مسجلة</td></tr>';
+                return;
+            }
+            
+            // ترتيب المنصرفات حسب التاريخ (الأحدث أولاً)
+            expenses.sort((a, b) => b.timestamp - a.timestamp);
+            
+            expenses.forEach(expense => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${formatDate(expense.date)}</td>
+                    <td>${expense.description}</td>
+                    <td>${formatCurrency(expense.amount)}</td>
+                    <td class="action-buttons">
+                        <button class="action-btn edit-btn" onclick="editExpense('${expense.id}')">
+                            <i class="fas fa-edit"></i> تعديل
+                        </button>
+                        <button class="action-btn delete-btn" onclick="deleteExpense('${expense.id}')">
+                            <i class="fas fa-trash"></i> حذف
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        // تعديل بيع نقدي
+        function editCashSale(id) {
+            const cashSales = JSON.parse(localStorage.getItem('cashSales')) || [];
+            const sale = cashSales.find(item => item.id === id);
+            
+            if (sale) {
+                document.getElementById('cashDate').value = sale.date;
+                document.getElementById('cashBuyerName').value = sale.buyerName;
+                document.getElementById('cashBuyerId').value = sale.buyerId;
+                document.getElementById('cashCarType').value = sale.carType;
+                document.getElementById('cashCarModel').value = sale.carModel;
+                document.getElementById('cashChassisNumber').value = sale.chassisNumber;
+                document.getElementById('cashAmount').value = sale.amount;
+                
+                currentEditId = id;
+                currentEditType = 'cash';
+                
+                // التمرير إلى أعلى النموذج
+                document.getElementById('cash-sales').scrollIntoView({ behavior: 'smooth' });
+                
+                showAlert('يمكنك الآن تعديل بيانات البيع النقدي', 'success');
+            }
+        }
+        
+        // تعديل بيع بالتقسيط
+        function editInstallmentSale(id) {
+            const installmentSales = JSON.parse(localStorage.getItem('installmentSales')) || [];
+            const sale = installmentSales.find(item => item.id === id);
+            
+            if (sale) {
+                document.getElementById('installmentDate').value = sale.date;
+                document.getElementById('installmentBuyerName').value = sale.buyerName;
+                document.getElementById('installmentBuyerId').value = sale.buyerId;
+                document.getElementById('installmentCarType').value = sale.carType;
+                document.getElementById('installmentCarModel').value = sale.carModel;
+                document.getElementById('installmentChassisNumber').value = sale.chassisNumber;
+                document.getElementById('installmentAmount').value = sale.amount;
+                document.getElementById('installmentInstallments').value = sale.installments;
+                document.getElementById('installmentFirstPayment').value = sale.firstPayment;
+                document.getElementById('installmentStatus').value = sale.status;
+                
+                currentEditId = id;
+                currentEditType = 'installment';
+                
+                // التمرير إلى أعلى النموذج
+                document.getElementById('installment-sales').scrollIntoView({ behavior: 'smooth' });
+                
+                showAlert('يمكنك الآن تعديل بيانات البيع بالتقسيط', 'success');
+            }
+        }
+        
+        // تعديل منصرفات
+        function editExpense(id) {
+            const expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+            const expense = expenses.find(item => item.id === id);
+            
+            if (expense) {
+                document.getElementById('expenseDate').value = expense.date;
+                document.getElementById('expenseDescription').value = expense.description;
+                document.getElementById('expenseAmount').value = expense.amount;
+                
+                currentEditId = id;
+                currentEditType = 'expense';
+                
+                // التمرير إلى أعلى النموذج
+                document.getElementById('expenses').scrollIntoView({ behavior: 'smooth' });
+                
+                showAlert('يمكنك الآن تعديل بيانات المنصرفات', 'success');
+            }
+        }
+        
+        // حذف بيع نقدي
+        function deleteCashSale(id) {
+            if (confirm('هل أنت متأكد من حذف هذا البيع النقدي؟')) {
+                let cashSales = JSON.parse(localStorage.getItem('cashSales')) || [];
+                cashSales = cashSales.filter(item => item.id !== id);
+                localStorage.setItem('cashSales', JSON.stringify(cashSales));
+                
+                loadCashSales();
+                updateStats();
+                showAlert('تم حذف البيع النقدي بنجاح', 'success');
+            }
+        }
+        
+        // حذف بيع بالتقسيط
+        function deleteInstallmentSale(id) {
+            if (confirm('هل أنت متأكد من حذف هذا البيع بالتقسيط؟')) {
+                let installmentSales = JSON.parse(localStorage.getItem('installmentSales')) || [];
+                installmentSales = installmentSales.filter(item => item.id !== id);
+                localStorage.setItem('installmentSales', JSON.stringify(installmentSales));
+                
+                loadInstallmentSales();
+                updateStats();
+                showAlert('تم حذف البيع بالتقسيط بنجاح', 'success');
+            }
+        }
+        
+        // حذف منصرفات
+        function deleteExpense(id) {
+            if (confirm('هل أنت متأكد من حذف هذه المنصرفات؟')) {
+                let expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+                expenses = expenses.filter(item => item.id !== id);
+                localStorage.setItem('expenses', JSON.stringify(expenses));
+                
+                loadExpenses();
+                updateStats();
+                showAlert('تم حذف المنصرفات بنجاح', 'success');
+            }
+        }
+        
+        // تحديث الإحصائيات
+        function updateStats() {
+            const cashSales = JSON.parse(localStorage.getItem('cashSales')) || [];
+            const installmentSales = JSON.parse(localStorage.getItem('installmentSales')) || [];
+            const expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+            
+            const totalCash = cashSales.reduce((sum, sale) => sum + sale.amount, 0);
+            const totalInstallment = installmentSales.reduce((sum, sale) => sum + sale.amount, 0);
+            const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+            const netRevenue = totalCash + totalInstallment - totalExpenses;
+            
+            document.getElementById('totalCash').textContent = formatCurrency(totalCash);
+            document.getElementById('totalInstallment').textContent = formatCurrency(totalInstallment);
+            document.getElementById('totalExpenses').textContent = formatCurrency(totalExpenses);
+            document.getElementById('netRevenue').textContent = formatCurrency(netRevenue);
+        }
+        
+        // توليد التقرير
+        function generateReport() {
+            const startDate = document.getElementById('reportStartDate').value;
+            const endDate = document.getElementById('reportEndDate').value;
+            const reportType = document.getElementById('reportType').value;
+            
+            const cashSales = JSON.parse(localStorage.getItem('cashSales')) || [];
+            const installmentSales = JSON.parse(localStorage.getItem('installmentSales')) || [];
+            const expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+            
+            let allData = [];
+            
+            // إضافة المبيعات النقدية إذا كانت مطلوبة
+            if (reportType === 'all' || reportType === 'cash') {
+                cashSales.forEach(sale => {
+                    allData.push({
+                        ...sale,
+                        displayType: 'بيع نقدي',
+                        displayDescription: `${sale.carType} - ${sale.carModel}`,
+                        displayBuyer: sale.buyerName,
+                        displayId: sale.buyerId,
+                        displayDetails: `رقم الشاسي: ${sale.chassisNumber}`
+                    });
+                });
+            }
+            
+            // إضافة المبيعات بالتقسيط إذا كانت مطلوبة
+            if (reportType === 'all' || reportType === 'installment') {
+                installmentSales.forEach(sale => {
+                    const statusText = sale.status === 'paid' ? 'مسدد' : 
+                                     sale.status === 'pending' ? 'قيد الدفع' : 'متأخر';
+                    
+                    allData.push({
+                        ...sale,
+                        displayType: 'بيع بالتقسيط',
+                        displayDescription: `${sale.carType} - ${sale.carModel}`,
+                        displayBuyer: sale.buyerName,
+                        displayId: sale.buyerId,
+                        displayDetails: `أقساط: ${sale.installments}, أول دفعة: ${formatCurrency(sale.firstPayment)}, الحالة: ${statusText}`
+                    });
+                });
+            }
+            
+            // إضافة المنصرفات إذا كانت مطلوبة
+            if (reportType === 'all' || reportType === 'expenses') {
+                expenses.forEach(expense => {
+                    allData.push({
+                        ...expense,
+                        displayType: 'منصرفات',
+                        displayDescription: expense.description,
+                        displayBuyer: '-',
+                        displayId: '-',
+                        displayDetails: '-'
+                    });
+                });
+            }
+            
+            // تصفية البيانات حسب التاريخ إذا تم تحديده
+            if (startDate) {
+                allData = allData.filter(item => item.date >= startDate);
+            }
+            
+            if (endDate) {
+                allData = allData.filter(item => item.date <= endDate);
+            }
+            
+            // ترتيب البيانات حسب التاريخ (الأحدث أولاً)
+            allData.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            // عرض البيانات في الجدول
+            const tbody = document.getElementById('reportBody');
+            tbody.innerHTML = '';
+            
+            if (allData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">لا توجد بيانات ضمن معايير البحث المحددة</td></tr>';
+                
+                // إعادة تعيين الملخص
+                document.getElementById('reportCashTotal').textContent = '0 AED';
+                document.getElementById('reportInstallmentTotal').textContent = '0 AED';
+                document.getElementById('reportExpensesTotal').textContent = '0 AED';
+                document.getElementById('reportNetTotal').textContent = '0 AED';
+                
+                return;
+            }
+            
+            let reportCashTotal = 0;
+            let reportInstallmentTotal = 0;
+            let reportExpensesTotal = 0;
+            
+            allData.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.displayType}</td>
+                    <td>${formatDate(item.date)}</td>
+                    <td>${item.displayDescription}</td>
+                    <td>${item.displayBuyer}</td>
+                    <td>${item.displayId}</td>
+                    <td>${formatCurrency(item.amount)}</td>
+                    <td>${item.displayDetails}</td>
+                `;
+                tbody.appendChild(row);
+                
+                // تحديث المجاميع
+                if (item.type === 'cash') {
+                    reportCashTotal += item.amount;
+                } else if (item.type === 'installment') {
+                    reportInstallmentTotal += item.amount;
+                } else if (item.type === 'expense') {
+                    reportExpensesTotal += item.amount;
+                }
+            });
+            
+            // تحديث ملخص التقرير
+            const reportNetTotal = reportCashTotal + reportInstallmentTotal - reportExpensesTotal;
+            
+            document.getElementById('reportCashTotal').textContent = formatCurrency(reportCashTotal);
+            document.getElementById('reportInstallmentTotal').textContent = formatCurrency(reportInstallmentTotal);
+            document.getElementById('reportExpensesTotal').textContent = formatCurrency(reportExpensesTotal);
+            document.getElementById('reportNetTotal').textContent = formatCurrency(reportNetTotal);
+            
+            showAlert('تم توليد التقرير بنجاح', 'success');
+        }
+        
+        // تصدير التقرير
+        function exportReport() {
+            const reportBody = document.getElementById('reportBody');
+            if (reportBody.children.length === 0 || reportBody.children[0].children.length === 1) {
+                showAlert('لا توجد بيانات لتصديرها. يرجى توليد التقرير أولاً.', 'error');
+                return;
+            }
+            
+            // في تطبيق حقيقي، هنا يمكنك إضافة كود لتصدير البيانات إلى Excel أو PDF
+            // لهذا المثال، سنقوم بإنشاء ملف CSV بسيط
+            
+            let csvContent = "نوع المعاملة,التاريخ,البيان,المشتري/المنصرفات,الهوية,المبلغ(AED),التفاصيل\n";
+            
+            const rows = document.querySelectorAll('#reportBody tr');
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length > 1) {
+                    const rowData = Array.from(cells).map(cell => `"${cell.textContent}"`).join(',');
+                    csvContent += rowData + '\n';
+                }
+            });
+            
+            // إضافة ملخص التقرير
+            csvContent += `\n\nملخص التقرير\n`;
+            csvContent += `إجمالي المبيعات النقدية,${document.getElementById('reportCashTotal').textContent}\n`;
+            csvContent += `إجمالي المبيعات بالتقسيط,${document.getElementById('reportInstallmentTotal').textContent}\n`;
+            csvContent += `إجمالي المنصرفات,${document.getElementById('reportExpensesTotal').textContent}\n`;
+            csvContent += `صافي الإيرادات,${document.getElementById('reportNetTotal').textContent}\n`;
+            
+            // إنشاء ملف وتنزيله
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `تقرير_مبيعاتي_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showAlert('تم تصدير التقرير بنجاح', 'success');
+        }
+        
+        // عرض التنبيهات
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                <span>${message}</span>
+            `;
+            
+            alertContainer.appendChild(alertDiv);
+            
+            // إزالة التنبيه بعد 5 ثوانٍ
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+        
+        // تنسيق التاريخ
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ar-EG', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+        
+        // تنسيق العملة
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('ar-EG', {
+                style: 'currency',
+                currency: 'AED',
+                minimumFractionDigits: 2
+            }).format(amount);
+        }
+    </script>
+</body>
+</html>
